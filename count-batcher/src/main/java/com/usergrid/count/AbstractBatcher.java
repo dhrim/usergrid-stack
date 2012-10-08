@@ -79,8 +79,8 @@ public abstract class AbstractBatcher implements Batcher {
       invocationCounter.inc();
       final TimerContext context = addTimer.time();
 
-      batch.add(count);
       synchronized(batch) {
+        batch.add(count);
         boolean wasSubmitted = maybeSubmit(batch);
         if ( wasSubmitted ) {
           batch.clear();
