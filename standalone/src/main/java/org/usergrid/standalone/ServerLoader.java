@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.usergrid.standalone;
 
+import com.jdotsoft.jarloader.CacheableJarClassLoader;
 import com.jdotsoft.jarloader.JarClassLoader;
 
 public class ServerLoader {
