@@ -31,11 +31,15 @@
 		<property name="clockResolution" ref="microsecondsTimeResolution" />
 	</bean>
 
-	<bean id="cassandraCluster" class="me.prettyprint.cassandra.service.ThriftCluster">
+	<bean id="cassandraClusterFactory" class="org.usergrid.persistence.cassandra.CassandraClusterFactory">
 		<constructor-arg value="${cassandra.cluster}" />
 		<constructor-arg ref="cassandraHostConfigurator" />
 	</bean>
-
+	
+	<bean id="cassandraCluster" 
+		factory-bean="cassandraClusterFactory"
+        factory-method="create"/>
+        
 	<!-- bean name="lockManager" class="org.usergrid.locking.zookeeper.ZooKeeperLockManagerImpl" 
 		/> -->
 	<bean name="lockManager" class="org.usergrid.locking.zookeeper.NoOpLockManagerImpl" />
