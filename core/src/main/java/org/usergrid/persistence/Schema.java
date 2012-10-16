@@ -30,6 +30,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -211,6 +212,9 @@ public class Schema {
     private static Schema instance;
 
     boolean initialized = false;
+
+    // store normalized Type.
+    private static Map<String, String> normalizedTypeChache = new HashMap<String, String>(); 
 
     public Schema() {
         setDefaultSchema(this);
@@ -1376,9 +1380,15 @@ public class Schema {
     }
 
     public static String normalizeEntityType(String entityType, boolean baseType) {
+    	
         if (entityType == null) {
             return null;
         }
+
+    	String orgEntityType = entityType;
+    	String normalizedEntityType = normalizedTypeChache.get(orgEntityType+baseType);
+    	if(normalizedEntityType!=null) { return normalizedEntityType; }
+
         if (baseType) {
             int i = entityType.indexOf(':');
             if (i >= 0) {
@@ -1396,6 +1406,7 @@ public class Schema {
                     + " is not a valid entity type");
         }
 
+        normalizedTypeChache.put(orgEntityType+baseType, entityType);
         // entityType = capitalizeDelimiter(entityType, '.', '_');
         return entityType;
     }
