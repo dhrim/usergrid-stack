@@ -52,9 +52,15 @@ public class JsonUtils {
 	private static final Logger logger = LoggerFactory
 			.getLogger(JsonUtils.class);
 
-	static ObjectMapper mapper = new ObjectMapper();
-
-	static SmileFactory smile = new SmileFactory();
+	private static ObjectMapper objectMapper = new ObjectMapper();
+	
+	private static ObjectMapper indentObjectMapper = new ObjectMapper();
+	static {
+		indentObjectMapper.getSerializationConfig().set(Feature.INDENT_OUTPUT, true);
+	}
+	private static SmileFactory smile = new SmileFactory();
+	
+	private static ObjectMapper smileObjectMapper = new ObjectMapper(smile);
 
 	/**
 	 * @param obj
@@ -62,7 +68,7 @@ public class JsonUtils {
 	 */
 	public static String mapToJsonString(Object obj) {
 		try {
-			return mapper.writeValueAsString(obj);
+			return objectMapper.writeValueAsString(obj);
 		} catch (JsonGenerationException e) {
 		} catch (JsonMappingException e) {
 		} catch (IOException e) {
@@ -73,9 +79,7 @@ public class JsonUtils {
 
 	public static String mapToFormattedJsonString(Object obj) {
 		try {
-			ObjectMapper m = new ObjectMapper();
-			m.getSerializationConfig().set(Feature.INDENT_OUTPUT, true);
-			return m.writeValueAsString(obj);
+			return indentObjectMapper.writeValueAsString(obj);
 		} catch (JsonGenerationException e) {
 		} catch (JsonMappingException e) {
 		} catch (IOException e) {
@@ -91,7 +95,7 @@ public class JsonUtils {
 	public static JsonSchema getJsonSchema(Class<?> cls) {
 		JsonSchema jsonSchema = null;
 		try {
-			jsonSchema = mapper.generateJsonSchema(cls);
+			jsonSchema = objectMapper.generateJsonSchema(cls);
 		} catch (JsonMappingException e) {
 		}
 		return jsonSchema;
@@ -99,7 +103,7 @@ public class JsonUtils {
 
 	public static Object parse(String json) {
 		try {
-			return mapper.readValue(json, Object.class);
+			return objectMapper.readValue(json, Object.class);
 		} catch (JsonParseException e) {
 		} catch (JsonMappingException e) {
 		} catch (IOException e) {
@@ -125,10 +129,9 @@ public class JsonUtils {
 		if (obj == null) {
 			return null;
 		}
-		ObjectMapper mapper = new ObjectMapper(smile);
 		byte[] bytes = null;
 		try {
-			bytes = mapper.writeValueAsBytes(obj);
+			bytes = smileObjectMapper.writeValueAsBytes(obj);
 		} catch (Exception e) {
 			logger.error("Error getting SMILE bytes", e);
 		}
@@ -149,10 +152,9 @@ public class JsonUtils {
 		if (clazz == null) {
 			clazz = Object.class;
 		}
-		ObjectMapper mapper = new ObjectMapper(smile);
 		Object obj = null;
 		try {
-			obj = mapper.readValue(byteBuffer.array(), byteBuffer.arrayOffset()
+			obj = smileObjectMapper.readValue(byteBuffer.array(), byteBuffer.arrayOffset()
 					+ byteBuffer.position(), byteBuffer.remaining(), clazz);
 		} catch (Exception e) {
 			logger.error("Error parsing SMILE bytes", e);
@@ -164,10 +166,9 @@ public class JsonUtils {
 		if ((byteBuffer == null) || !byteBuffer.hasRemaining()) {
 			return null;
 		}
-		ObjectMapper mapper = new ObjectMapper(smile);
 		JsonNode obj = null;
 		try {
-			obj = mapper.readValue(byteBuffer.array(), byteBuffer.arrayOffset()
+			obj = smileObjectMapper.readValue(byteBuffer.array(), byteBuffer.arrayOffset()
 					+ byteBuffer.position(), byteBuffer.remaining(),
 					JsonNode.class);
 		} catch (Exception e) {
@@ -180,7 +181,7 @@ public class JsonUtils {
 		if (obj == null) {
 			return null;
 		}
-		JsonNode node = mapper.convertValue(obj, JsonNode.class);
+		JsonNode node = objectMapper.convertValue(obj, JsonNode.class);
 		return node;
 	}
 
@@ -189,7 +190,7 @@ public class JsonUtils {
 			return null;
 		}
 		@SuppressWarnings("unchecked")
-		Map<String, Object> map = mapper.convertValue(obj, Map.class);
+		Map<String, Object> map = objectMapper.convertValue(obj, Map.class);
 		return map;
 	}
 
@@ -248,7 +249,7 @@ public class JsonUtils {
 		} else if (obj instanceof BigInteger) {
 			return ((BigInteger) obj).longValue();
 		} else if (obj instanceof JsonNode) {
-			return mapper.convertValue(obj, Object.class);
+			return objectMapper.convertValue(obj, Object.class);
 		}
 		return obj;
 	}
@@ -321,7 +322,7 @@ public class JsonUtils {
 		Object json = null;
 		try {
 			URL resource = JsonUtils.class.getResource(file);
-			json = mapper.readValue(resource, Object.class);
+			json = objectMapper.readValue(resource, Object.class);
 		} catch (Exception e) {
 			logger.error("Error loading JSON", e);
 		}
@@ -332,7 +333,7 @@ public class JsonUtils {
 		Object json = null;
 		try {
 			File file = new File(filename);
-			json = mapper.readValue(file, Object.class);
+			json = objectMapper.readValue(file, Object.class);
 		} catch (Exception e) {
 			logger.error("Error loading JSON", e);
 		}
@@ -343,7 +344,7 @@ public class JsonUtils {
 		Object json = null;
 		try {
 			URL url = new URL(urlStr);
-			json = mapper.readValue(url, Object.class);
+			json = objectMapper.readValue(url, Object.class);
 		} catch (Exception e) {
 			logger.error("Error loading JSON", e);
 		}
@@ -353,7 +354,7 @@ public class JsonUtils {
 	public static Object loadFromUrl(URL url) {
 		Object json = null;
 		try {
-			json = mapper.readValue(url, Object.class);
+			json = objectMapper.readValue(url, Object.class);
 		} catch (Exception e) {
 			logger.error("Error loading JSON", e);
 		}
