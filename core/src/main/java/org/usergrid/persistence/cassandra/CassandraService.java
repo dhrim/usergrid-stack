@@ -131,6 +131,8 @@ public class CassandraService {
 
     private Keyspace systemKeyspace;
 
+    private Map<String, String> accessMap;
+    
     public static final StringSerializer se = new StringSerializer();
     public static final ByteBufferSerializer be = new ByteBufferSerializer();
     public static final UUIDSerializer ue = new UUIDSerializer();
@@ -147,6 +149,7 @@ public class CassandraService {
         this.cluster = cluster;
         chc = cassandraHostConfigurator;
         this.lockManager = lockManager;
+        updateAccessMap();
         db_logger.info("" + cluster.getKnownPoolHosts(false));
     }
 
@@ -157,13 +160,17 @@ public class CassandraService {
             ((ConfigurableConsistencyLevel) consistencyLevelPolicy)
                     .setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
         }
-        Map<String, String> accessMap = new HashMap<String, String>();
-        accessMap.put("username", properties.getProperty("cassandra.username"));
-        accessMap.put("password", properties.getProperty("cassandra.password"));
+        updateAccessMap();
         systemKeyspace = HFactory.createKeyspace(SYSTEM_KEYSPACE, cluster,
                 consistencyLevelPolicy, ON_FAIL_TRY_ALL_AVAILABLE, accessMap);
     }
 
+	private void updateAccessMap() {
+        accessMap = new HashMap<String, String>();
+        accessMap.put("username", properties.getProperty("cassandra.username"));
+        accessMap.put("password", properties.getProperty("cassandra.password"));
+	}
+	
     public Cluster getCluster() {
         return cluster;
     }
@@ -186,6 +193,7 @@ public class CassandraService {
 
     public void setProperties(Properties properties) {
         this.properties = properties;
+		updateAccessMap();
     }
 
     public Map<String, String> getPropertiesMap() {
@@ -233,9 +241,6 @@ public class CassandraService {
     }
 
     public Keyspace getKeyspace(String keyspace, UUID prefix) {
-        Map<String, String> accessMap = new HashMap<String, String>();
-        accessMap.put("username", properties.getProperty("cassandra.username"));
-        accessMap.put("password", properties.getProperty("cassandra.password"));
         Keyspace ko = null;
         if (USE_VIRTUAL_KEYSPACES && (prefix != null)) {
             ko = createVirtualKeyspace(keyspace, prefix, ue, cluster,
