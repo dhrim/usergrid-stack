@@ -68,10 +68,10 @@
         <constructor-arg ref="counterUtils"/>
     </bean>
 
-    <bean id="simpleBatcher" class="com.usergrid.count.SimpleBatcher">
-        <constructor-arg value="1"/>
+    <bean id="simpleBatcher" class="com.usergrid.count.AsyncSimpleBatcher">
+        <constructor-arg value="100"/>
         <property name="batchSubmitter" ref="batchSubmitter"/>
-        <property name="batchSize" value="0"/>
+        <property name="batchSize" value="100"/>
     </bean>
 
     <bean id="batchSubmitter" class="com.usergrid.count.CassandraSubmitter">
